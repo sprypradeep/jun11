@@ -1,53 +1,29 @@
 # AGENTS.md
 
-This file provides guidance for AI coding agents (Codex, Copilot, Cursor, Zed, OpenCode).
+This file provides high-signal instructions for AI agents working in proj2 (FastAPI/Pydantic v2). Only include facts that an agent would likely miss without help or are non-obvious workflow constraints.
 
-## Project Overview
+## 🚀 Key Commands & Workflow
+*   **Run Server:** `cd backend && uv run uvicorn app.main:app --reload`
+*   **Full Test/Lint Cycle (Required Order):** Always perform linting and formatting before running tests to ensure code quality is maintained across the board.
+    ```bash
+    pytest # Runs comprehensive test suite
+    ruff check . --fix && ruff format . 
+    ```
 
-**proj2** - FastAPI application generated with [Full-Stack AI Agent Template](https://github.com/vstorm-co/full-stack-ai-agent-template).
+## 🏗️ Project Structure & Entrypoints
+*   `backend/app/api/routes/v1`: Contains all API endpoints (FastAPI routers). Modification here requires careful handling of request validation and dependency injection.
+*   `backend/app/services`: Core business logic layer. Services should handle domain operations and raise specific exceptions (`NotFoundError`, `AlreadyExistsError`).
+*   `backend/app/repositories`: Data access objects (DAO). **Constraint:** Use `db.flush()` for state changes, never raw SQL commit methods within the repository layer.
 
-**Stack:** FastAPI + Pydantic v2, PostgreSQL
-, JWT + API Key auth, Redis
-, pydantic_ai (google), Next.js 15 (i18n)
+## 💡 Core Conventions & Constraints
+*   **Schema Design:** Always use separate Pydantic schemas: `Create`, `Update`, and a final `Response` schema to enforce clear data boundaries.
+*   **Database Operations:** Use `.flush()` in repositories, not general database commit methods (e.g., avoid raw transaction commits).
+*   **Error Handling:** Services must raise specific custom exceptions (`NotFoundError`, `AlreadyExistsError`) rather than generic Python errors.
 
-## Commands
-
-```bash
-# Run server
-cd backend && uv run uvicorn app.main:app --reload
-
-# Tests & lint
-pytest
-ruff check . --fix && ruff format .
-
-# Migrations
-uv run alembic upgrade head
-uv run alembic revision --autogenerate -m "Description"
-```
-
-## Project Structure
-
-```
-backend/app/
-├── api/routes/v1/    # Endpoints
-├── services/         # Business logic
-├── repositories/     # Data access
-├── schemas/          # Pydantic models
-├── db/models/        # DB models
-├── agents/           # AI agents
-└── commands/         # CLI commands
-```
-
-## Key Conventions
-
-- `db.flush()` in repositories, not `commit()`
-- Services raise `NotFoundError`, `AlreadyExistsError`
-- Separate `Create`, `Update`, `Response` schemas
-- Commands auto-discovered from `app/commands/`
-
-## More Info
-
-- `docs/architecture.md` - Architecture details
-- `docs/adding_features.md` - How to add features
-- `docs/testing.md` - Testing guide
-- `docs/patterns.md` - Code patterns
+## ⚙️ Tooling & Setup Notes
+*   Use the following commands for standard maintenance tasks:
+    ```bash
+    # Run Migrations (When updating DB schema)
+    uv run alembic upgrade head # Apply migrations to the database
+    uv run alembic revision --autogenerate -m "Description" # Generate new migration file 
+    ```
